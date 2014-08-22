@@ -15,8 +15,10 @@ var camera = _3dviz.camera;
 var light = _3dviz.light;
 var renderer = _3dviz.renderer;
 
-var controls = require('./controls.js')(camera);
-var moveCamera = require('./moveCamera.js')(camera, function(camera){// visible bounding box
+//var controls = require('./controls.js')(camera);
+var controls = require('./FirstPersonControls.js')(camera, renderer.domElement);
+var moveCamera = require('./moveCamera.js')(camera, function(camera){
+    // visible bounding box
     var L = 2 * camera.position.z * Math.tan(3.14*camera.fov/(2*180));
     var l = L * WIDTH / HEIGHT;
     // console.log(camera.position.x,camera.position.z);
@@ -26,10 +28,11 @@ var moveCamera = require('./moveCamera.js')(camera, function(camera){// visible 
     var north = camera.position.y + L/2;
     var west = camera.position.x - l/2;
     var east = camera.position.x + l/2;
+    console.log(south, north, east, west);
     loadTiles(south, north, east, west);
 });
 
-var MAX_Y = require('./MAX_Y.js');
+var CUB = require('./CUB_parameters.js');
 
 var GeoConverter = require('./geoConverter.js');
 var SunCalc = require('suncalc');
@@ -48,12 +51,8 @@ window.addEventListener('resize', function() {
 });
 
 // initialise the geoconverter that will pass from a shifted lambert cc 45 to lon, lat and reverse
-// the map is shifted
-// -0.583232, 44.839270 corresponds to 1416800.1046884255, 4188402.562212417 in lambert 45
-// and to (X=119) * 200 + (x=100), (MAX_Y-(Y=115))*200 + (y=100) in the map
-var deltaX = 1416800.1046884255 - 119*200 - 100;
-var deltaY = 4188402.562212417 - (MAX_Y-115)*200 - 100;
-var geoConverter = new GeoConverter(45, deltaX, deltaY);
+
+var geoConverter = new GeoConverter(CUB.lambert, CUB.deltaX, CUB.deltaY);
 
 
 serverCommunication.metadataP.then(function(metadata) {
@@ -62,18 +61,23 @@ serverCommunication.metadataP.then(function(metadata) {
         var building = metadata[id];
         var X = building.X;
         var Y = building.Y;
-        var item = [building.xmin + X*200, building.ymin + (MAX_Y-Y)*200, building.xmax + X*200, building.ymax+ (MAX_Y-Y)*200, {id: id, X:X, Y:Y}];
+        var item = [building.xmin + X*200, building.ymin + (CUB.MAX_Y-Y)*200, building.xmax + X*200, building.ymax+ (CUB.MAX_Y-Y)*200, {id: id, X:X, Y:Y}];
         rTree.insert(item);
     });
 
-    geoCode(guiControls.address).then(function(coords) {
-        var newPosition = geoConverter.toLambert(coords.lon, coords.lat);
-        moveCamera(newPosition.X, newPosition.Y, 300); })
+    // load unconditionnally
+    // loadTiles(11065.111059952906, 11270.186327486968, 24849.239355716505, 24233.21091018855);
+    loadTiles(10733.030036453603, 11038.862106779145, 24776.123980987297, 24062.720113534535 );
+    // geoCode(guiControls.address).then(function(coords) {
+    //     var newPosition = geoConverter.toLambert(coords.lon, coords.lat);
+    //     moveCamera(newPosition.X, newPosition.Y, 300); })
+    // });
 });
 
 gui.addressControler.onFinishChange(function(value) {
     geoCode(value).then(function(coords) {
         var newPosition = geoConverter.toLambert(coords.lon, coords.lat);
+        console.log("new pos", newPosition);
         moveCamera(newPosition.X, newPosition.Y, 300);
     })
 });
