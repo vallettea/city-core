@@ -1,6 +1,5 @@
 'use strict';
 
-
 module.exports = function geoCode(address) {
     var url = "http://maps.googleapis.com/maps/api/geocode/json?address=";
 

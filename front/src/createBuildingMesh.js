@@ -1,7 +1,7 @@
 'use strict';
 
 var THREE = require('three');
-var MAXY = require('./MAX_Y');
+var CUB = require('./CUB_parameters.js');
 
 // useful functions
 // we'll transform x,y ranging from -nbx to nbx in 4096 int values
@@ -72,7 +72,7 @@ module.exports = function createBuildingMesh(buffer, X, Y) {
         wireframe: false
     }));
     
-    mesh.position.set(X*200, (MAXY - Y)*200, 0);
+    mesh.position.set(X*200, (CUB.MAX_Y - Y)*200, 0);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     

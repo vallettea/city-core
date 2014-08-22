@@ -19,12 +19,6 @@ var _3dsFormatToAntsBinaryBuffer = require('../src/3dsFormatToAntsBinaryBuffer.j
 var parse3ds = require('../src/parse3ds.js');
 
 
-var altitudes = require("./data/altitudes.json");
-if (!altitudes){
-    console.error("File altitudes.json missing, use cacheAltitude.js");
-    process.exit(1);
-}
-
 function tmpdir(){
     var def = Q.defer();
 
@@ -92,6 +86,8 @@ console.log(zipAbsolutePath, outAbsolutePath);
 // in : one archive
 // out : a bunch of binaries + metadata
 
+var tilesLonLat = {};
+
 function extractBuildings(_3dsPath, x, y){
     var def = Q.defer();
     parse3ds(_3dsPath, function(err, data){
@@ -147,18 +143,17 @@ function extractBuildings(_3dsPath, x, y){
         // the center of xyObject should be at the proper altitude
         // find the z of the center of the mesh
         var zmesh = planeMeshHeight(xyObject, 0, 0);
+        // geoconvert the center of the tile to long, lat
+        var geoConverter = new GeoConverter(CUB.lambert, CUB.deltaX, CUB.deltaY);
+        var lonLat =  geoConverter.toLonLat(x*200, (CUB.MAX_Y-y)*200);
 
-        var realAltitude = altitudes["x"+x+"y"+y];
-        var deltaZ = 0//realAltitude - zmesh;
-        console.log(deltaZ);
-        // apply translation to all tile objects
-        meshes.forEach(function(m){
-            m.vertices.forEach(function(v){
-                v.z += deltaZ;
-            });
-        });
-        
+        tilesLonLat["x"+x+"y"+y] = lonLat;
+        // ask google the altitude of this point
 
+        // getAltitude(lonLat).then(function(altitude){
+        //     console.log(altitude);
+
+        // })
         
         
         
@@ -322,9 +317,13 @@ unzipInTmpDir(zipAbsolutePath)
     .then(function(){
 
         console.timeEnd('all');
+        // write LonLat to file
+        fs.writeFile("./tools/data/lonLat.json", JSON.stringify(tilesLonLat), function(err){console.error(err)});
 
     })
     .fail(function(err){ console.error(err) });
+
+
 
 
 

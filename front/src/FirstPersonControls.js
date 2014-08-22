@@ -21,12 +21,13 @@ var DISTANCE = 20;
 module.exports = function(camera, domElement){
     camera.up.set(0, 0, 1); // Looking up
     
-    camera.position.x = 24541.22;
-    camera.position.y = 11167.65;
-    camera.position.z = 3;
+    camera.position.x = 24419.422047260916;
+    camera.position.y = 10885.946071616374;
+    camera.position.z = 20;
     
-    var lookAtPoint = new THREE.Vector3( camera.position.x, camera.position.y - DISTANCE, camera.position.z );
-    
+    // var lookAtPoint = new THREE.Vector3( camera.position.x, camera.position.y - DISTANCE, camera.position.z );
+    var lookAtPoint = new THREE.Vector3( 24437.359966403845, 10893.982866714188 , camera.position.z);
+
     camera.lookAt( lookAtPoint )
     
     var alpha;
@@ -35,7 +36,7 @@ module.exports = function(camera, domElement){
     
     function moveCamera(){
         
-        console.log('rotation', rotation, lookAtPoint.x, lookAtPoint.y, camera.position);
+        // console.log('rotation', rotation, lookAtPoint.x, lookAtPoint.y, camera.position);
         lookAtPoint.x = camera.position.x +
             ((lookAtPoint.x - camera.position.x)*cos(alpha) - (lookAtPoint.y - camera.position.y)*sin(alpha));
         lookAtPoint.y = camera.position.y +

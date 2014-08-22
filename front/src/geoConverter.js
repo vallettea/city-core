@@ -82,7 +82,8 @@ module.exports = function(CC, deltaX, deltaY){
                 delta = Math.abs( p1 - p0 );
             }
 
-            return {lon:lon*180/pi, lat:p1*180/pi};
+            // TODO: check why we have to take the absolute val of lat
+            return {lon:lon*180/pi, lat:Math.abs(p1*180/pi)};
         }
     }
 
